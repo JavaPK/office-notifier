@@ -1,9 +1,8 @@
 package com.ttsw.officenotifier.configuration;
 
-import com.ttsw.officenotifier.api.Event;
+import com.ttsw.officenotifier.events.MailEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,26 +19,26 @@ import java.util.Map;
 @Configuration
 public class KafkaConsumerConfiguration {
 
-    @Value("${office-core.kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
-    public ConsumerFactory<Integer, Event> consumerFactory() {
-        Map<String, Object> conumerProperties = new HashMap<>();
+    public ConsumerFactory<Integer, MailEvent> consumerFactory() {
+        Map<String, Object> consumerProperties = new HashMap<>();
 
-        conumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        conumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
-        conumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
+        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
 
-        conumerProperties.put(JsonDeserializer.TRUSTED_PACKAGES, "com.ttsw.officenotifier.api");
-        conumerProperties.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, "false");
+        consumerProperties.put(JsonDeserializer.TRUSTED_PACKAGES, "com.ttsw.officenotifier.events");
+        consumerProperties.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, "false");
 
-        return new DefaultKafkaConsumerFactory<>(conumerProperties);
+        return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<Integer, Event> concurrentKafkaListenerContainerFactory(){
-        var concurrentKafkaListenerContainerFactory =  new ConcurrentKafkaListenerContainerFactory<Integer, Event>();
+    public ConcurrentKafkaListenerContainerFactory<Integer, MailEvent> concurrentKafkaListenerContainerFactory() {
+        var concurrentKafkaListenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<Integer, MailEvent>();
         concurrentKafkaListenerContainerFactory.setConsumerFactory(consumerFactory());
         return concurrentKafkaListenerContainerFactory;
     }
